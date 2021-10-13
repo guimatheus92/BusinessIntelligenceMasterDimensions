@@ -1,7 +1,9 @@
 # app.py
 
 from flask import Flask, jsonify
+from dimensioncalendar import DimensionCalendar
 import pandas as pd
+import os
 
 # Launching an app flask
 app = Flask(__name__)
@@ -19,8 +21,10 @@ def index():
 
 @app.route('/dimensioncalendar')
 def dimensioncalendar():
-    # Read CSV file
-    data = pd.read_csv('DimensionCalendar.csv')
+    # Read CSV file    
+    #data = pd.read_csv(r'/static/csv/DimensionCalendar.csv')    
+    data = DimensionCalendar()
+    data = data.astype(str)
     # Convert dataframe to dictionary
     data = data.to_dict("list")
     # Return data and 200 OK code
