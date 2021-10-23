@@ -1,12 +1,13 @@
-# dimensioncalendar.py
+# DimensionCalendar.py
 
-'''
-OBJECTIVE:
-Generate a calendar table with necessary columns of date attributes. 
-Output to a dataframe and then to a CSV file to use in an application. 
-See readme.md in git repo for more info
-https://github.com/guimatheus92
-'''
+# --------------------------------------------------------------------------------------------------#
+# Title: Generate calendar dimension table using Python
+# Author: Guilherme Matheus
+# Date: Script created on 15.10.2021
+# Script and data info: Generate a calendar table with necessary columns of date attributes
+#                       Output to a dataframe and then to a CSV file to use in an application. 
+#                       See readme.md in git repo for more info: https://github.com/guimatheus92
+# --------------------------------------------------------------------------------------------------#
 
 import configparser
 import pathlib
@@ -23,7 +24,9 @@ config = configparser.ConfigParser()
 config.read(os.path.join(os.path.sep, pathlib.Path(__file__).parent.resolve(), 'EnvVariables.ini'))
 
 # Load .ini variables
+# Start date to your calendar dimension with YYYY-MM-DD format. i.e. 2021-01-01
 start_date = config['DimensionCalendar']['start_date']
+# End date to your calendar dimension with YYYY-MM-DD format. i.e. 2021-12-31
 end_date = config['DimensionCalendar']['end_date']
 
 def DimensionCalendar():
@@ -82,11 +85,11 @@ def DimensionCalendar():
                 # Bimester name (Q01, Q02, ...)
                 NM_BIMESTER = 'B0' + str(NR_BIMESTER)
                 # Relative year from current year (-1, 0, ...)
-                NR_RELATIVEYEAR = relativedelta((DT_SHORTDATE - timedelta(days=1)), DT_SHORTDATE).years
+                NR_RELATIVEYEAR = relativedelta(DT_SHORTDATE, date.today()).years
                 # Relative month from current month (-1, 0, ...)
-                NR_RELATIVEMONTH = ((DT_SHORTDATE - timedelta(days=1)).year - DT_SHORTDATE.year) * 12 + ((DT_SHORTDATE - timedelta(days=1)).month - DT_SHORTDATE.month)
+                NR_RELATIVEMONTH = (DT_SHORTDATE.year - date.today().year) * 12 + (DT_SHORTDATE.month - date.today().month)
                 # Relative day from current day (-1, 0, ...)
-                NR_RELATIVEDAY = (DT_SHORTDATE - (DT_SHORTDATE - timedelta(days=1)) ).days
+                NR_RELATIVEDAY = (DT_SHORTDATE - date.today()).days
                 # Short date as int in "yyyymmdd" format (20210101, 20210102, ...)
                 NR_SHORTDATE = str(NR_YEAR) + str(NR_MONTH) + str(NR_DAY)
                 # YearMonth as int in "yyyymm" format (202001, 202002, ...)

@@ -1,0 +1,84 @@
+﻿DimensãoCalendario = 
+
+-- -------------------------------------------------------------------------------------------------#
+-- Titulo: Gerar tabela de dimensão de calendário usando DAX
+-- Autor: Guilherme Matheus
+-- Data: Script criado no dia 18.10.2021
+-- Informação do script e dados: Gerar uma tabela de calendário com as colunas necessárias de atributos de data
+--                               Veja readme.md no meu repositorio para mais informações: https://github.com/guimatheus92
+-- --------------------------------------------------------------------------------------------------#
+
+-- Data de início para sua dimensão de calendário com o formato YYYY-MM-DD. Ex.: 2021-01-01
+VAR dt_inicio =
+    DATE ( 2020, 1, 1 )
+-- Data final para sua dimensão de calendário com o formato YYYY-MM-DD. Ex.: 2021-12-31
+VAR dt_fim =
+    DATE ( 2022, 1, 1 )
+RETURN
+    ADDCOLUMNS (
+        CALENDAR ( dt_inicio, dt_fim ),
+        "NR_ANO", YEAR ( [Date] ),
+        "NR_MES", MONTH ( [Date] ),
+        "NR_DIA", DAY ( [Date] ),
+        "NM_MES", FORMAT ( [Date], "MMMM" ),
+        "NM_DIADASEMANA", FORMAT ( [Date], "DDDD" ),
+        "NR_MESANO", FORMAT ( [Date], "MM/YYYY" ),
+        "NM_MESANO", FORMAT ( [Date], "MMMM, YYYY" ),
+        "NM_DATALONGA", FORMAT ( [Date], "DDDD DD, YYYY" ),
+        "NR_DIADASEMANA", WEEKDAY ( [Date], 2 ),
+        "NR_DIADOANO", DATEDIFF ( DATE ( YEAR ( [Date] ), 1, 1 ), [Date], DAY ) + 1,
+        "NR_SEMESTRE", IF ( MONTH ( [Date] ) <= 6, 1, 2 ),
+        "NM_SEMESTRE",
+            "S0"
+                & IF ( MONTH ( [Date] ) <= 6, 1, 2 ),
+        "NR_QUADRIMESTRE",
+            SWITCH (
+                TRUE (),
+                MONTH ( [Date] ) <= 4, 1,
+                AND ( MONTH ( [Date] ) > 4, MONTH ( [Date] ) < 9 ), 2,
+                MONTH ( [Date] ) > 8, 3
+            ),
+        "NR_TRIMESTRE", QUARTER ( [Date] ),
+        "NM_TRIMESTRE", "T0" & QUARTER ( [Date] ),
+        "NR_BIMESTRE",
+            SWITCH (
+                TRUE (),
+                MONTH ( [Date] ) <= 2, 1,
+                AND ( MONTH ( [Date] ) > 2, MONTH ( [Date] ) < 5 ), 2,
+                AND ( MONTH ( [Date] ) > 4, MONTH ( [Date] ) < 7 ), 3,
+                AND ( MONTH ( [Date] ) > 6, MONTH ( [Date] ) < 9 ), 4,
+                AND ( MONTH ( [Date] ) > 8, MONTH ( [Date] ) < 11 ), 5,
+                MONTH ( [Date] ) > 10, 6
+            ),
+        "NM_BIMESTRE",
+            "B0"
+                & SWITCH (
+                    TRUE (),
+                    MONTH ( [Date] ) <= 2, 1,
+                    AND ( MONTH ( [Date] ) > 2, MONTH ( [Date] ) < 5 ), 2,
+                    AND ( MONTH ( [Date] ) > 4, MONTH ( [Date] ) < 7 ), 3,
+                    AND ( MONTH ( [Date] ) > 6, MONTH ( [Date] ) < 9 ), 4,
+                    AND ( MONTH ( [Date] ) > 8, MONTH ( [Date] ) < 11 ), 5,
+                    MONTH ( [Date] ) > 10, 6
+                ),
+        "NR_ANORELATIVO", DATEDIFF ( TODAY (), [Date], YEAR ),
+        "NR_MESRELATIVO", DATEDIFF ( TODAY (), [Date], MONTH ),
+        "NR_DIARELATIVO", DATEDIFF ( TODAY (), [Date], DAY ),
+        "NR_DATA", FORMAT ( [Date], "YYYYMMDD" ),
+        "NR_ANOMES", INT ( FORMAT ( [Date], "YYYYMM" ) ),
+        "NR_ANOTRIMESTRE", YEAR ( [Date] ) & QUARTER ( [Date] ),
+        "IC_DIAUTIL", IF ( WEEKDAY ( [Date], 2 ) < 6, "Sim", "Não" ),
+        "IC_FINALDESEMANA", IF ( WEEKDAY ( [Date], 2 ) > 5, "Sim", "Não" ),
+        "IC_FERIADO", "Não",
+        "IC_ANOATUAL", IF ( YEAR ( [Date] ) == YEAR ( TODAY () ), "Sim", "Não" ),
+        "IC_MESATUAL", IF ( MONTH ( [Date] ) == MONTH ( TODAY () ), "Sim", "Não" ),
+        "IC_DATAATUAL", IF ( [Date] == TODAY (), "Sim", "Não" ),
+        "IC_ANOPASSADO",
+            IF ( YEAR ( [Date] ) == YEAR ( ( TODAY () - 1 ) ), "Sim", "Não" ),
+        "IC_MESPASSADO",
+            IF ( MONTH ( [Date] ) == MONTH ( ( TODAY () - 1 ) ), "Sim", "Não" ),
+        "IC_ONTEM",
+            IF ( [Date] == ( TODAY () - 1 ), "Sim", "Não" ),
+        "LINDATA", TODAY (),
+        "LINORIGEM", "Carga Manual"
+    )

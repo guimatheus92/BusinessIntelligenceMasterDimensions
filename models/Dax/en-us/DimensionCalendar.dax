@@ -1,0 +1,84 @@
+﻿DimensionCalendar = 
+
+-- -------------------------------------------------------------------------------------------------#
+-- Title: Generate calendar dimension table using DAX
+-- Author: Guilherme Matheus
+-- Date: Script created on 18.10.2021
+-- Script and data info: Generate a calendar table with necessary columns of date attributes
+--                       See readme.md in git repo for more info: https://github.com/guimatheus92
+-- --------------------------------------------------------------------------------------------------#
+
+-- Start date to your calendar dimension with YYYY-MM-DD format. i.e. 2021-01-01
+VAR start_dt =
+    DATE ( 2020, 1, 1 )
+-- End date to your calendar dimension with YYYY-MM-DD format. i.e. 2021-12-31
+VAR end_dt =
+    DATE ( 2022, 1, 1 )
+RETURN
+    ADDCOLUMNS (
+        CALENDAR ( start_dt, end_dt ),
+        "NR_YEAR", YEAR ( [Date] ),
+        "NR_MONTH", MONTH ( [Date] ),
+        "NR_DAY", DAY ( [Date] ),
+        "NM_MONTH", FORMAT ( [Date], "MMMM" ),
+        "NM_DAYOFWEEK", FORMAT ( [Date], "DDDD" ),
+        "NR_MONTHYEAR", FORMAT ( [Date], "MM/YYYY" ),
+        "NM_MONTHYEAR", FORMAT ( [Date], "MMMM, YYYY" ),
+        "NM_LONGDATE", FORMAT ( [Date], "DDDD DD, YYYY" ),
+        "NR_DAYOFWEEK", WEEKDAY ( [Date], 2 ),
+        "NR_DAYOFYEAR", DATEDIFF ( DATE ( YEAR ( [Date] ), 1, 1 ), [Date], DAY ) + 1,
+        "NR_SEMESTER", IF ( MONTH ( [Date] ) <= 6, 1, 2 ),
+        "NM_SEMESTER",
+            "S0"
+                & IF ( MONTH ( [Date] ) <= 6, 1, 2 ),
+        "NR_FOURMONTHS",
+            SWITCH (
+                TRUE (),
+                MONTH ( [Date] ) <= 4, 1,
+                AND ( MONTH ( [Date] ) > 4, MONTH ( [Date] ) < 9 ), 2,
+                MONTH ( [Date] ) > 8, 3
+            ),
+        "NR_QUARTER", QUARTER ( [Date] ),
+        "NM_QUARTER", "Q0" & QUARTER ( [Date] ),
+        "NR_BIMESTER",
+            SWITCH (
+                TRUE (),
+                MONTH ( [Date] ) <= 2, 1,
+                AND ( MONTH ( [Date] ) > 2, MONTH ( [Date] ) < 5 ), 2,
+                AND ( MONTH ( [Date] ) > 4, MONTH ( [Date] ) < 7 ), 3,
+                AND ( MONTH ( [Date] ) > 6, MONTH ( [Date] ) < 9 ), 4,
+                AND ( MONTH ( [Date] ) > 8, MONTH ( [Date] ) < 11 ), 5,
+                MONTH ( [Date] ) > 10, 6
+            ),
+        "NM_BIMESTER",
+            "B0"
+                & SWITCH (
+                    TRUE (),
+                    MONTH ( [Date] ) <= 2, 1,
+                    AND ( MONTH ( [Date] ) > 2, MONTH ( [Date] ) < 5 ), 2,
+                    AND ( MONTH ( [Date] ) > 4, MONTH ( [Date] ) < 7 ), 3,
+                    AND ( MONTH ( [Date] ) > 6, MONTH ( [Date] ) < 9 ), 4,
+                    AND ( MONTH ( [Date] ) > 8, MONTH ( [Date] ) < 11 ), 5,
+                    MONTH ( [Date] ) > 10, 6
+                ),
+        "NR_RELATIVEYEAR", DATEDIFF ( TODAY (), [Date], YEAR ),
+        "NR_RELATIVEMONTH", DATEDIFF ( TODAY (), [Date], MONTH ),
+        "NR_RELATIVEDAY", DATEDIFF ( TODAY (), [Date], DAY ),
+        "NR_SHORTDATE", FORMAT ( [Date], "YYYYMMDD" ),
+        "NR_YEARMONTH", INT ( FORMAT ( [Date], "YYYYMM" ) ),
+        "NR_YEARQUARTER", YEAR ( [Date] ) & QUARTER ( [Date] ),
+        "IC_ISWEEKDAY", IF ( WEEKDAY ( [Date], 2 ) < 6, "Yes", "No" ),
+        "IC_ISWEEKEND", IF ( WEEKDAY ( [Date], 2 ) > 5, "Yes", "No" ),
+        "IC_ISHOLIDAY", "No",
+        "IC_ISCURRENTYEAR", IF ( YEAR ( [Date] ) == YEAR ( TODAY () ), "Yes", "No" ),
+        "IC_ISCURRENTMONTH", IF ( MONTH ( [Date] ) == MONTH ( TODAY () ), "Yes", "No" ),
+        "IC_ISCURRENTDATE", IF ( [Date] == TODAY (), "Yes", "No" ),
+        "IC_LASTYEAROFDATE",
+            IF ( YEAR ( [Date] ) == YEAR ( ( TODAY () - 1 ) ), "Yes", "No" ),
+        "IC_LASTMONTHOFDATE",
+            IF ( MONTH ( [Date] ) == MONTH ( ( TODAY () - 1 ) ), "Yes", "No" ),
+        "IC_LASTDAYOFDATE",
+            IF ( [Date] == ( TODAY () - 1 ), "Yes", "No" ),
+        "LINDATE", TODAY (),
+        "LINSOURCE", "Automatically Ingestion"
+    )
